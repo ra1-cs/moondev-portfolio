@@ -126,7 +126,7 @@ export default function SubmitPage() {
         return router.replace("/login");
       }
 
-      setUser({ id: profileId, email: data.user.email });
+      setUser({ id: profileId, email: data.user.email || "" });
       setEmail(data.user.email || "");
       setLoadingUser(false);
 
