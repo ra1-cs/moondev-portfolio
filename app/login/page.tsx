@@ -26,14 +26,29 @@ export default function LoginPage() {
 
       if (error) return setError("Invalid credentials");
 
-      const { data: profile } = await supabase
+      const user = data.user; // ✅ IMPORTANT
+      if (!user) return setError("Login error: no user returned.");
+
+      // Load user's profile
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("role")
-        .eq("id", data.user.id)
+        .eq("id", user.id)
         .single();
 
-      if (profile.role === "developer") router.push("/submit");
-      else if (profile.role === "evaluator") router.push("/evaluator");
+      if (profileError || !profile) {
+        console.error("No profile found for this user");
+        return setError("Account has no role assigned.");
+      }
+
+      // Redirect based on role
+      if (profile.role === "developer") {
+        router.push("/submit");
+      } else if (profile.role === "evaluator") {
+        router.push("/evaluator");
+      } else {
+        setError("Unknown role.");
+      }
     });
   };
 
@@ -44,7 +59,6 @@ export default function LoginPage() {
       <div className="absolute w-[600px] h-[600px] bg-blue-500/20 blur-[180px] rounded-full -top-40 -left-40"></div>
       <div className="absolute w-[500px] h-[500px] bg-blue-600/10 blur-[160px] rounded-full bottom-0 right-0"></div>
 
-      {/* Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,12 +72,10 @@ export default function LoginPage() {
           Please enter your account details
         </p>
 
-        {error && (
-          <p className="text-red-400 text-sm text-center mb-4">{error}</p>
-        )}
+        {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
 
         <form onSubmit={handleLogin} className="space-y-6">
-        
+
           {/* EMAIL */}
           <div className="relative">
             <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
@@ -72,7 +84,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="Email"
-              className="w-full bg-black/30 border border-white/10 text-white placeholder-gray-400 rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+              className="w-full bg-black/30 border border-white/10 text-white placeholder-gray-400 rounded-xl px-10 py-3"
             />
           </div>
 
@@ -84,23 +96,22 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Password"
-              className="w-full bg-black/30 border border-white/10 text-white placeholder-gray-400 rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+              className="w-full bg-black/30 border border-white/10 text-white placeholder-gray-400 rounded-xl px-10 py-3"
             />
             <button
               type="button"
               onClick={() => setShowPass((prev) => !prev)}
-              className="absolute right-3 top-3 text-gray-400 hover:text-white transition"
+              className="absolute right-3 top-3 text-gray-400 hover:text-white"
             >
               {showPass ? <EyeOff /> : <Eye />}
             </button>
           </div>
 
-          {/* LOGIN BUTTON */}
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 transition text-white font-semibold rounded-xl shadow-lg"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl"
           >
             {isPending ? "Authenticating..." : "Login"}
           </motion.button>
