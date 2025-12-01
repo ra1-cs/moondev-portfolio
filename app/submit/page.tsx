@@ -73,9 +73,13 @@ export default function SubmitPage() {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext("2d");
-        if (!ctx) reject("Canvas unsupported");
+        if (!ctx) return reject("Canvas unsupported");
 
-        ctx.drawImage(img, 0, 0, width, height);
+       // Vercel build fix: assure TypeScript that ctx is not null
+       const safeCtx = ctx as CanvasRenderingContext2D;
+
+       safeCtx.drawImage(img, 0, 0, width, height);
+
 
         let quality = 0.9;
 
